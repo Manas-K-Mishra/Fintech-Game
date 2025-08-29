@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Your Money Mind – Money Traps Game</title>
+  <style>
+    :root {
+      --bg: #0f1221;
+      --panel: #171a2f;
+      --ink: #e8ecff;
+      --muted: #9aa4d6;
+      --brand: #7c8cff;
+      --accent: #56f0b0;
+      --warn: #ffb870;
+      --danger: #ff7a94;
+      --card: #1d2140;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    * { box-sizing: border-box }
+    html, body { height: 100% }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: radial-gradient(1200px 700px at 80% -10%, #1c214a 0%, #0f1221 60%);
+      color: var(--ink);
+    }
+    a { color: var(--brand) }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 24px }
+    header { display: flex; align-items: center; gap: 16px; justify-content: space-between; margin-bottom: 16px }
+    .logo { display: flex; align-items: center; gap: 12px }
+    .logo .mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--brand), #9df);
+      display: grid;
+      place-items: center;
+      color: #101225;
+      font-weight: 800;
+      box-shadow: var(--shadow);
+    }
+    .title { font-size: 20px; font-weight: 800; letter-spacing: .2px }
+    .grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 18px }
+    @media (max-width: 980px) { .grid { grid-template-columns: 1fr } }
+    
+    aside {
+      position: sticky;
+      top: 24px;
+      align-self: start;
+    }
+    
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.00));
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      transition: transform 0.2s ease;
+      margin-bottom: 18px;
+    }
+    .card:hover { transform: translateY(-2px) }
+    .card h2 { margin: 0 0 10px 0; font-size: 18px }
+    .muted { color: var(--muted) }
+    .scenario { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px }
+    .choices { display: grid; gap: 10px }
+    .choice {
+      border: 1px solid rgba(255,255,255,.1);
+      background: var(--card);
+      padding: 12px 14px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .choice:hover { outline: 2px solid rgba(124,140,255,.4); transform: translateY(-1px) }
+    .choice.correct { border-color: rgba(86,240,176,.6); outline: 2px solid rgba(86,240,176,.6) }
+    .choice.wrong { border-color: rgba(255,122,148,.6); outline: 2px solid rgba(255,122,148,.6) }
+    .choice.neutral { border-color: var(--warn); outline: 2px solid var(--warn) }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #12152a;
+      border: 1px solid rgba(255,255,255,.08);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .flex { display: flex; gap: 10px; align-items: center; flex-wrap: wrap }
+    .points { font-weight: 800; color: var(--accent) }
+    .streak { font-weight: 700; color: #c8d2ff }
+    .footer { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px }
+    button {
+      background: linear-gradient(180deg, #2a2f62, #232750);
+      border: 1px solid rgba(255,255,255,.12);
+      color: var(--ink);
+      padding: 10px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    button:hover { background: linear-gradient(180deg, #3a3f72, #333760); transform: translateY(-1px) }
+    button.primary { background: linear-gradient(180deg, #5164ff, #2737b8) }
+    button.primary:hover { background: linear-gradient(180deg, #6174ff, #3747c8) }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px }
+    @media (max-width: 680px) { .cols { grid-template-columns: 1fr } }
+    input[type=text], input[type=number], textarea, select {
+      width: 100%;
+      background: #0f1226;
+      border: 1px solid rgba(255,255,255,.12);
+      color: var(--ink);
+      padding: 10px 12px;
+      border-radius: 12px;
+      transition: border-color 0.2s ease;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--brand); outline: none }
+    .badge {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #1f2250, #181b3a);
+      border: 1px solid rgba(255,255,255,.1);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .achievements { display: flex; flex-wrap: wrap; gap: 8px }
+    .notice {
+      border-left: 3px solid var(--brand);
+      padding: 10px 12px;
+      background: #11142b;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+    .small { font-size: 12px }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">
+        <div class="mark">YM</div>
+        <div>
+          <div class="title">Your Money Mind – Money Traps Game</div>
+          <div class="muted small">A hands-on game to overcome behavioral biases</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <main id="main"></main>
+      <aside>
+        <div class="card">
+          <h2>Player Stats</h2>
+          <div class="flex">
+            <span class="pill">Score: <span id="score" class="points">0</span></span>
+            <span class="pill">Streak: <span id="streak" class="streak">0</span></span>
+            <span class="pill">Level: <span id="level">1</span></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Achievements</h2>
+          <div id="achievements" class="achievements"></div>
+        </div>
+
+        <div class="card">
+          <h2>Quick Tips</h2>
+          <ul class="small muted">
+            <li>Take a 5-second pause before any money decision.</li>
+            <li>Write down rules to guide your financial choices.</li>
+            <li>Avoid distractions like hype notifications.</li>
+            <li>Check your spending habits weekly and celebrate smart choices.</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+
+    <footer style="margin-top:18px" class="muted small">
+      © Your Money Mind. This learning game is for education, not financial advice.
+    </footer>
+  </div>
+
+<script>
+const initialState = { score: 0, streak: 0, level: 1, completed: false, achievements: [] };
+let state = initialState;
+
+function save() { localStorage.setItem('ymm_money_traps', JSON.stringify(state)); }
+function load() { try { return JSON.parse(localStorage.getItem('ymm_money_traps')); } catch(e) { return null; } }
+function reset() { state = JSON.parse(JSON.stringify(initialState)); save(); render(); alert('Progress reset.'); }
+
+function addScore(points) {
+  state.score += points;
+  state.streak += (points > 0 ? 1 : 0);
+  if (points <= 0) state.streak = 0;
+  if (state.score >= state.level * 150) {
+    state.level++;
+    toast(`Level up! You reached Level ${state.level}`);
+    award('Level ' + state.level);
+  }
+  save();
+  updateHUD();
+}
+
+function complete() { state.completed = true; save(); updateHUD(); }
+function isDone() { return state.completed; }
+
+function award(name) {
+  if (!state.achievements.includes(name)) {
+    state.achievements.push(name);
+    save();
+    renderAchievements();
+  }
+}
+
+function updateHUD() {
+  document.getElementById('score').textContent = state.score;
+  document.getElementById('streak').textContent = state.streak;
+  document.getElementById('level').textContent = state.level;
+}
+
+function renderAchievements() {
+  const box = document.getElementById('achievements');
+  box.innerHTML = state.achievements.length ? '' : '<span class="muted small">No badges yet. Earn some!</span>';
+  state.achievements.forEach(a => {
+    const s = document.createElement('span');
+    s.className = 'badge';
+    s.textContent = a;
+    box.appendChild(s);
+  });
+}
+
+function toast(msg) {
+  const el = document.createElement('div');
+  el.textContent = msg;
+  el.style.position = 'fixed';
+  el.style.bottom = '20px';
+  el.style.left = '50%';
+  el.style.transform = 'translateX(-50%)';
+  el.style.background = '#0b0f25';
+  el.style.border = '1px solid rgba(255,255,255,.2)';
+  el.style.padding = '10px 14px';
+  el.style.borderRadius = '10px';
+  el.style.boxShadow = 'var(--shadow)';
+  el.style.zIndex = '9999';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1800);
+}
+
+const SCENARIOS = [
+  {
+    id: 's1',
+    text: 'Your investments drop 12% in two weeks. You’re worried and want to sell to avoid losing more.',
+    choices: [
+      {
+        txt: 'Compare your investments to your long-term goals.',
+        bias: 'None',
+        why: 'Focusing on goals helps you stay calm and avoid rash decisions.',
+        rational: 'Check if your investments still match your risk comfort and goals.',
+        points: 40
+      },
+      {
+        txt: 'Sell now and reinvest when things calm down.',
+        bias: 'Loss Aversion',
+        why: 'Selling locks in losses and assumes you can time the market.',
+        rational: 'Stay invested to recover over time; avoid timing guesses.',
+        points: -20
+      },
+      {
+        txt: 'Switch to investments doing well recently.',
+        bias: 'Recency Bias',
+        why: 'Recent winners may not stay strong, and switching adds costs.',
+        rational: 'Choose varied investments for steady growth.',
+        points: -15
+      },
+      {
+        txt: 'Invest more to make up for losses quickly.',
+        bias: 'Gambler’s Fallacy',
+        why: 'Past losses don’t improve future odds; big bets increase risk.',
+        rational: 'Adjust investments based on research, not emotions.',
+        points: -10
+      }
+    ]
+  },
+  {
+    id: 's2',
+    text: 'A cryptocurrency jumps 50% in a week, and social media says it’ll double again. You’re tempted to invest without research.',
+    choices: [
+      {
+        txt: 'Put in a small amount to join the excitement.',
+        bias: 'FOMO',
+        why: 'Fear of missing out pushes you to act without research.',
+        rational: 'Only invest after researching thoroughly.',
+        points: -15
+      },
+      {
+        txt: 'Wait for the price to drop before buying.',
+        bias: 'Timing Illusion',
+        why: 'Guessing price drops is unreliable and risky.',
+        rational: 'Invest based on research, not price guesses.',
+        points: -10
+      },
+      {
+        txt: 'Research the cryptocurrency’s risks and value.',
+        bias: 'None',
+        why: 'Researching ensures decisions align with your goals.',
+        rational: 'Study the asset’s fundamentals before investing.',
+        points: 35
+      },
+      {
+        txt: 'Follow a friend’s advice to invest now.',
+        bias: 'Social Proof',
+        why: 'Friends’ enthusiasm can cloud your judgment.',
+        rational: 'Make decisions based on your own research.',
+        points: -20
+      }
+    ]
+  },
+  {
+    id: 's3',
+    text: 'An online store has a “24-hour only” 60% off sale on electronics. You’re short on cash but feel pressured to buy.',
+    choices: [
+      {
+        txt: 'Buy now to save money on the deal.',
+        bias: 'Scarcity',
+        why: 'Feeling rushed leads to spending you can’t afford.',
+        rational: 'Only buy what fits your budget.',
+        points: -20
+      },
+      {
+        txt: 'Wait few hours to decide if you need the item.',
+        bias: 'None',
+        why: 'Pausing helps you avoid impulsive purchases.',
+        rational: 'Check your budget and needs before buying.',
+        points: 30
+      },
+      {
+        txt: 'Buy extra items to get more savings.',
+        bias: 'Anchoring',
+        why: 'Big discounts trick you into buying things you don’t need.',
+        rational: 'Focus on what you actually need.',
+        points: -25
+      },
+      {
+        txt: 'Ask a friend if the deal is worth it.',
+        bias: 'Social Proof',
+        why: 'Others’ opinions can push you to buy unnecessarily.',
+        rational: 'Decide based on your budget, not others’ views.',
+        points: -10
+      }
+    ]
+  },
+  {
+    id: 's4',
+    text: 'A friend shares a “can’t-miss” stock tip from a newsletter, saying it’ll rise fast. Your investments are already set.',
+    choices: [
+      {
+        txt: 'Invest a small amount to test the tip.',
+        bias: 'FOMO',
+        why: 'Acting on hype without research risks losses.',
+        rational: 'Research thoroughly before investing.',
+        points: -15
+      },
+      {
+        txt: 'Invest heavily based on the newsletter’s reputation.',
+        bias: 'Authority Bias',
+        why: 'Trusting unverified sources can lead to big losses.',
+        rational: 'Base investments on your own research.',
+        points: -30
+      },
+      {
+        txt: 'Ask a trusted advisor for a second opinion.',
+        bias: 'None',
+        why: 'Consulting an expert helps you get a balanced view and avoids acting on a single source.',
+        rational: 'An expert can provide a professional, unbiased perspective.',
+        points: 10
+      },
+      {
+        txt: 'Ignore the tip and review your current investments.',
+        bias: 'None',
+        why: 'Skipping hype keeps your decisions steady.',
+        rational: 'Check your investments to ensure they fit your goals.',
+        points: 35
+      }
+    ]
+  },
+  {
+    id: 's5',
+    text: 'Your recent stock choices have done well, and you’re confident you can keep winning. You’re tempted to invest more.',
+    choices: [
+      {
+        txt: 'Check your investments against market data.',
+        bias: 'None',
+        why: 'Using data prevents overconfidence from clouding decisions.',
+        rational: 'Review market trends to keep your investments balanced.',
+        points: 40
+      },
+      {
+        txt: 'Add more money to your stock choices.',
+        bias: 'Overconfidence',
+        why: 'Past wins might be luck; bigger bets increase risk.',
+        rational: 'Keep investments varied to manage risk.',
+        points: -20
+      },
+      {
+        txt: 'Borrow money to make bigger investments.',
+        bias: 'Illusion of Control',
+        why: 'Borrowing amplifies losses if things go wrong.',
+        rational: 'Avoid borrowing for risky investments.',
+        points: -25
+      },
+      {
+        txt: 'Set aside a small amount for extra stock picks.',
+        bias: 'None',
+        why: 'This approach limits your risk and can be part of a healthy portfolio.',
+        rational: 'Limiting risky bets to a small portion of your money is a good strategy.',
+        points: 10
+      }
+    ]
+  },
+  {
+    id: 's6',
+    text: 'After a big market drop, investments are rising again, but you’re nervous about another fall and hesitant to invest more.',
+    choices: [
+      {
+        txt: 'Wait until the market fully recovers.',
+        bias: 'Recency Bias',
+        why: 'Focusing on recent drops ignores long-term growth.',
+        rational: 'Invest regularly to benefit from gains.',
+        points: -15
+      },
+      {
+        txt: 'Move your money to safer options like bonds.',
+        bias: 'Loss Aversion',
+        why: 'Being too cautious might miss market growth.',
+        rational: 'Balance your investments for steady growth.',
+        points: -10
+      },
+      {
+        txt: 'Invest regularly based on your budget.',
+        bias: 'None',
+        why: 'Steady investing helps you ride out market changes.',
+        rational: 'Keep investing a set amount regularly.',
+        points: 35
+      },
+      {
+        txt: 'Invest a little to see how the market does.',
+        bias: 'Present Bias',
+        why: 'Small investments still stray from a steady plan.',
+        rational: 'Stick to a consistent investment amount.',
+        points: 10
+      }
+    ]
+  },
+  {
+    id: 's7',
+    text: 'You get a $5,000 bonus, but your emergency savings only cover one month of expenses. The market is doing well, tempting you to invest the money.',
+    choices: [
+      {
+        txt: 'Invest all the bonus in the market.',
+        bias: 'Optimism Bias',
+        why: 'Market excitement risks your financial safety.',
+        rational: 'Build your emergency savings first.',
+        points: -20
+      },
+      {
+        txt: 'Invest in one popular stock.',
+        bias: 'Availability Bias',
+        why: 'Focusing on one stock risks big losses.',
+        rational: 'Choose varied investments after saving.',
+        points: -25
+      },
+      {
+        txt: 'Split the bonus between investing and savings.',
+        bias: 'Compromise Effect',
+        why: 'Splitting leaves your savings too small.',
+        rational: 'Focus on building emergency savings first.',
+        points: -10
+      },
+      {
+        txt: 'Add the bonus to your emergency savings.',
+        bias: 'None',
+        why: 'Strong savings protect you before investing.',
+        rational: 'Save enough for 3-6 months of expenses first.',
+        points: 40
+      }
+    ]
+  },
+  {
+    id: 's8',
+    text: 'You’ve been saving for a vacation, but a new investment app promises high returns. You’re considering redirecting your vacation funds.',
+    choices: [
+      {
+        txt: 'Compare the app’s claims to independent reviews.',
+        bias: 'None',
+        why: 'Checking reliable sources avoids falling for hype.',
+        rational: 'Research the app thoroughly before investing.',
+        points: 35
+      },
+      {
+        txt: 'Move half your vacation savings to the app.',
+        bias: 'Compromise Effect',
+        why: 'Splitting funds risks your goal for unverified gains.',
+        rational: 'Stick to your savings goal for the vacation.',
+        points: -15
+      },
+      {
+        txt: 'Invest all your vacation savings for quick profits.',
+        bias: 'Overoptimism',
+        why: 'Chasing high returns risks losing your savings.',
+        rational: 'Prioritize your planned goals over risky apps.',
+        points: -25
+      },
+      {
+        txt: 'Ask other app users about their experiences.',
+        bias: 'Social Proof',
+        why: 'Others’ stories may mislead you without solid data.',
+        rational: 'Rely on verified information, not user opinions.',
+        points: -10
+      }
+    ]
+  },
+  {
+    id: 's9',
+    text: 'You own a stock that’s lost 20% of its value. You’re hesitant to sell because you’ve held it for years and believe it’ll recover.',
+    choices: [
+      {
+        txt: 'Sell the stock to avoid further losses.',
+        bias: 'Loss Aversion',
+        why: 'Selling just to avoid losses ignores the stock’s potential.',
+        rational: 'Evaluate the stock based on its current value.',
+        points: -15
+      },
+      {
+        txt: 'Research the stock’s current value and prospects.',
+        bias: 'None',
+        why: 'Objective research helps you make unemotional decisions.',
+        rational: 'Assess the stock’s future based on data, not past ownership.',
+        points: 35
+      },
+      {
+        txt: 'Hold the stock because you’ve owned it for years.',
+        bias: 'Endowment Effect',
+        why: 'Valuing something more because you own it clouds judgment.',
+        rational: 'Treat the stock as if you’re buying it today.',
+        points: -20
+      },
+      {
+        txt: 'Buy more of the stock to lower your average cost.',
+        bias: 'Sunk Cost Fallacy',
+        why: 'Adding to a losing investment doesn’t guarantee recovery.',
+        rational: 'Base decisions on future potential, not past costs.',
+        points: -10
+      }
+    ]
+  },
+  {
+    id: 's10',
+    text: 'You’re planning a big purchase and find a report that supports buying now. You’re tempted to ignore other information.',
+    choices: [
+      {
+        txt: 'Act on the report and make the purchase now.',
+        bias: 'Confirmation Bias',
+        why: 'Focusing only on supportive information ignores risks.',
+        rational: 'Consider all information before deciding.',
+        points: -20
+      },
+      {
+        txt: 'Ask a friend who recently made a similar purchase.',
+        bias: 'Social Proof',
+        why: 'Others’ experiences may not match your situation.',
+        rational: 'Base your decision on your own research.',
+        points: -10
+      },
+      {
+        txt: 'Search for both pros and cons of buying now.',
+        bias: 'None',
+        why: 'Balanced research leads to better decisions.',
+        rational: 'Look at all sides to make an informed choice.',
+        points: 35
+      },
+      {
+        txt: 'Delay the purchase until you feel more certain.',
+        bias: 'Status Quo Bias',
+        why: 'Waiting for certainty may mean missing opportunities.',
+        rational: 'Decide based on research, not hesitation.',
+        points: -15
+      }
+    ]
+  }
+];
+
+function renderScenarios(root) {
+  root.innerHTML = '';
+  const card = document.createElement('div');
+  card.className = 'card';
+  const done = isDone();
+  card.innerHTML = `<h2>Money Traps Game ${done ? '<span class="badge">Completed</span>' : ''}</h2>
+    <div class="muted">Pick the smart choice. Learn why mistakes happen. Earn points.</div>`;
+
+  SCENARIOS.forEach(s => {
+    const box = document.createElement('div');
+    box.className = 'scenario';
+    box.innerHTML = `<div class="pill">Scenario ${s.id.toUpperCase()}</div>
+      <div class="muted">${s.text}</div>`;
+    const choices = document.createElement('div');
+    choices.className = 'choices';
+    s.choices.forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'choice';
+      btn.innerHTML = `<div style="font-weight:600">${c.txt}</div>`;
+      btn.onclick = () => {
+        const classToAdd = c.points > 0 ? 'correct' : (c.points < 0 ? 'wrong' : 'neutral');
+        btn.classList.add(classToAdd);
+        addScore(c.points);
+        const feedback = document.createElement('div');
+        feedback.className = 'notice small';
+        feedback.innerHTML = `<div><strong>Mistake:</strong> ${c.bias}</div>
+          <div><strong>Why it happens:</strong> ${c.why}</div>
+          <div><strong>Smart choice:</strong> ${c.rational}</div>`;
+        btn.after(feedback);
+        [...choices.children].forEach(b => b.disabled = true);
+        checkScenarioCompletion();
+      };
+      choices.appendChild(btn);
+    });
+    box.appendChild(choices);
+    card.appendChild(box);
+  });
+
+  const footer = document.createElement('div');
+  footer.className = 'footer';
+  const resetBtn = document.createElement('button');
+  resetBtn.textContent = 'Retry All';
+  resetBtn.onclick = () => render();
+  footer.appendChild(resetBtn);
+  card.appendChild(footer);
+  root.appendChild(card);
+}
+
+function checkScenarioCompletion() {
+  const anyLeft = [...document.querySelectorAll('.choice')].some(b => !b.disabled);
+  if (!anyLeft) {
+    complete();
+    award('Trap Spotter');
+    updateHUD();
+  }
+}
+
+function render() {
+  state = JSON.parse(JSON.stringify(initialState));
+  save();
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+  renderScenarios(main);
+  updateHUD();
+  renderAchievements();
+}
+
+window.YMM = { reset };
+render();
+</script>
+</body>
+</html>
